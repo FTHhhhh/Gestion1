@@ -16,7 +16,7 @@ jobs:
 
       # Étape 2 : Debug pour vérifier les variables
       - name: Debug repository owner
-        run: echo "${{ github.repository_owner | toLower }}"
+        run: echo "${{ github.repository_owner }}"
 
       # Étape 3 : Connectez-vous à GitHub Container Registry (ghcr.io)
       - name: Log in to GitHub Container Registry
@@ -29,9 +29,9 @@ jobs:
       # Étape 4 : Build et taguez l'image Docker
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner | toLower }}/ue19-lab-05:latest .
+          docker build -t ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest .
 
       # Étape 5 : Poussez l'image sur GitHub Container Registry
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.repository_owner | toLower }}/ue19-lab-05:latest
+          docker push ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest
