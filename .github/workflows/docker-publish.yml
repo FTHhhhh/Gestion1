@@ -22,12 +22,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Étape 3 : Build et taguez l'image Docker
+      # Étape 3 : Build et taguez l'image Docker (avec nom en minuscules)
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/ue19-lab-05:latest .
+          docker build -t ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest .
 
       # Étape 4 : Poussez l'image sur GitHub Container Registry
       - name: Push Docker image
         run: |
-          docker push ghcr.io/${{ github.repository }}/ue19-lab-05:latest
+          docker push ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest
