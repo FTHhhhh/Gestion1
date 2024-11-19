@@ -9,4 +9,4 @@ Génération de blagues en une ou deux parties (setup et réponse).
 Compatible avec Python et Docker pour une exécution flexible.
 Prérequis
 Python : Version 3.8 ou supérieure.
-Docker : Optionnel, pour exécuter l'application dans un conteneur.
+Docker : Optionnel, pour exécuter l'application dans un conteneur."# ue19-lab-05" 
