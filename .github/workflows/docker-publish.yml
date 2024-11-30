@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: Build, Scan, and Publish Docker Image
 
 on:
   push:
@@ -14,11 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Étape 2 : Debug pour vérifier les variables
-      - name: Debug repository owner
-        run: echo "${{ github.repository_owner }}"
-
-      # Étape 3 : Connectez-vous à GitHub Container Registry (ghcr.io)
+      # Étape 2 : Connectez-vous au registre GitHub Container Registry
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -26,14 +22,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Étape 4 : Build et taguez l'image Docker (avec conversion en minuscules)
+      # Étape 3 : Build et taguez l'image Docker
       - name: Build Docker image
         run: |
-          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/${REPO_OWNER}/ue19-lab-05:latest .
+          docker build -t ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest .
+
+      # Étape 4 : Scannez l'image Docker avec Trivy
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@v0.11.0
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest
+          format: table
+          ignore-unfixed: true  # Ignore les vulnérabilités pour lesquelles il n'y a pas encore de correctif.
 
       # Étape 5 : Poussez l'image sur GitHub Container Registry
       - name: Push Docker image
         run: |
-          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/${REPO_OWNER}/ue19-lab-05:latest
+          docker push ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest
