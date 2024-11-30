@@ -33,9 +33,10 @@ jobs:
         REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
         docker build -t ghcr.io/${REPO_OWNER}/ue19-lab-05:latest .
 
+
     # Étape 5 : Scan de l'image Docker pour les vulnérabilités avec Trivy
     - name: Scan Docker image with Trivy
-      uses: aquasecurity/trivy-action@v0.28.0
+      uses: aquasecurity/trivy-action@0.28.0
       with:
         image-ref: 'ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest'
         format: 'sarif'
