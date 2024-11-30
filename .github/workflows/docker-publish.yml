@@ -3,47 +3,52 @@ name: Build, Scan, and Publish Docker Image
 on:
   push:
     branches:
-      - main
+      - main  # Lorsqu'une modification est poussée sur la branche 'main'
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-20.04
+    name: Build, Scan and Publish Docker Image
+    runs-on: ubuntu-latest
 
     steps:
-      # Étape 1 : Vérifiez le code source
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    # Étape 1 : Vérification du code source
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      # Étape 2 : Connectez-vous au registre GitHub Container Registry
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+    # Étape 2 : Debug pour vérifier les variables
+    - name: Debug repository owner
+      run: echo "${{ github.repository_owner }}"
 
-      # Étape 3 : Build et taguez l'image Docker
-      - name: Build Docker image
-        run: |
-          IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):latest"
-          docker build -t $IMAGE_TAG .
+    # Étape 3 : Connexion à GitHub Container Registry (ghcr.io)
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Étape 4 : Scannez l'image Docker avec Trivy et générez un rapport au format SARIF
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: 'ghcr.io/${{ github.repository_owner }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):latest'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+    # Étape 4 : Build et tag de l'image Docker avec la conversion en minuscules pour le nom du propriétaire
+    - name: Build Docker image
+      run: |
+        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+        docker build -t ghcr.io/${REPO_OWNER}/ue19-lab-05:latest .
 
-      # Étape 5 : Téléversez les résultats du scan Trivy vers l'onglet Security de GitHub
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
+    # Étape 5 : Scan de l'image Docker pour les vulnérabilités avec Trivy
+    - name: Scan Docker image with Trivy
+      uses: aquasecurity/trivy-action@v0.28.0
+      with:
+        image-ref: 'ghcr.io/${{ github.repository_owner }}/ue19-lab-05:latest'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
 
-      # Étape 6 : Poussez l'image sur GitHub Container Registry
-      - name: Push Docker image
-        run: |
-          IMAGE_TAG="ghcr.io/${{ github.repository_owner }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):latest"
-          docker push $IMAGE_TAG
+    # Étape 6 : Télécharger les résultats du scan Trivy vers l'onglet "Security" de GitHub
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    # Étape 7 : Pousser l'image Docker sur GitHub Container Registry
+    - name: Push Docker image
+      run: |
+        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+        docker push ghcr.io/${REPO_OWNER}/ue19-lab-05:latest
